@@ -19,7 +19,6 @@ def compress_video(service, dir_path, dowloaded_files, folder_id=None):
         None
     """
 
-    print(f"{dowloaded_files}#####################################################################")
     # Crear carpetas
     os.makedirs(dir_path, exist_ok=True)
     os.makedirs(f"opt_{dir_path}", exist_ok=True)
@@ -97,5 +96,7 @@ def compress_video(service, dir_path, dowloaded_files, folder_id=None):
     shutil.rmtree(dir_path, ignore_errors=True)
     if os.path.exists(f"opt_{dir_path}"):  # Verificamos si fue inicializado
         shutil.rmtree(f"opt_{dir_path}", ignore_errors=True)
-        print(f"Carpetas locales eliminadas: {dir_path} y {f"opt_{dir_path}" if f"opt_{dir_path}" else 'N/A'}")    
+        opt_dir_path = f"opt_{dir_path}" if f"opt_{dir_path}" else "N/A"
+        print(f"Carpetas locales eliminadas: {dir_path} y {opt_dir_path}")
+ 
             
