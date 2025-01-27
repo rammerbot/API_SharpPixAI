@@ -7,10 +7,10 @@ import pickle
 
 # Alcances necesarios para el acceso a Google Drive
 SCOPES = [
-    'https://www.googleapis.com/auth/drive',
+    
     'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/drive.readonly',
-    'https://www.googleapis.com/auth/drive.metadata.readonly'
+  
+  
 ]
 
 def get_auth_url():
