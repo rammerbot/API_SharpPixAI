@@ -36,27 +36,30 @@ def auth_callback(code):
     """Handles the authorization callback and creates the Drive service."""
     try:
         base_path = os.path.abspath(os.path.dirname(__file__))
+        
+        # Inicializa el flujo de autorización usando el archivo de cliente
         flow = InstalledAppFlow.from_client_secrets_file(
             os.path.join(base_path, "client_4836.json"),
             SCOPES,
             redirect_uri="https://etl-machine-learning-api-movie.onrender.com/callback/"
         )
-    
-        # Obtain credentials using the authorization code
+        
+        # Obtiene las credenciales usando el código de autorización
         creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/?code={code}")
         
-        # Save credentials to a pickle file (optional)
+        # Guarda las credenciales en un archivo pickle (opcional)
         token_path = os.path.join(base_path, "data", "token.pickle")
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
-            pickle.dump(creds, token)  # Save credentials for future use (optional)
-
-        # Create the Drive service
-        service = build('drive', 'v3', credentials=flow.credentials)
+            pickle.dump(creds, token)  # Guardar las credenciales para futuros usos
+        
+        # Crear el servicio de Google Drive con las credenciales obtenidas
+        service = build('drive', 'v3', credentials=Credentials.from_authorized_user_info(info=creds))
+        
         return {"message": "Autenticación exitosa", "service": service}
+    
     except Exception as e:
-        return {"error": f"Error during authentication: {e}"}
-
+        return {"error": f"Error durante la autenticación: {e}"}
 
 
 
