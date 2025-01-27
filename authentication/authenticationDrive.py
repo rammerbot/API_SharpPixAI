@@ -33,45 +33,27 @@ def get_auth_url():
         return {"error": f"Error al generar la URL de autorización: {e}"}
     
 def auth_callback(code):
-    """Recibe el código de autorización, intercambia por token y guarda el token en un archivo pickle."""
-    creds = None
     try:
-        base_path = os.path.abspath(os.path.dirname(__file__))
-        token_path = os.path.join(base_path, "data", "token.pickle")
-        client_secret_path = os.path.join(base_path, "client_4836.json")
-
-        # Completar el flujo de autenticación con el código proporcionado
         flow = InstalledAppFlow.from_client_secrets_file(
-            client_secret_path,
+            'client_4836.json',
             SCOPES,
-            redirect_uri="https://etl-machine-learning-api-movie.onrender.com/callback/"
+            redirect_uri="https://miapp.com/callback/"
         )
-
-        # Obtener el token de acceso usando el código
-        creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/?code={code}")
         
-        # Convertir credenciales en credenciales validas
-        creds = Credentials.from_authorized_user_info(info=creds)
+        # Obtención de credenciales usando el código de autorización
+        creds = flow.fetch_token(authorization_response=f"https://miapp.com/callback/?code={code}")
 
-        # Verificar si las credenciales son válidas
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                return {"error": "Las credenciales no son válidas o han expirado."}
-
-        # Guardar el token
+        # Almacenar las credenciales en un archivo pickle para no tener que pedir autorización nuevamente
+        token_path = 'data/token.pickle'
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
 
+        # Crear el servicio de Google Drive
         service = build('drive', 'v3', credentials=creds)
-        
-        return service
-
+        return {"message": "Autenticación exitosa", "service": service}
     except Exception as e:
-        return {"error": f"Error durante el proceso de autenticación: {e}"}
-
+        return {"error": f"Error durante la autenticación: {e}"}
 
 
 
