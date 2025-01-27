@@ -30,7 +30,7 @@ def autenticate():
     # else:
     #     return {"error":"error al autenticar"}
         
-@app.get("/callback_video/")
+@app.get("/callback/")
 def autenticate(code:str):
     service = auth_callback(code)
     if service:
