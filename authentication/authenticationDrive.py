@@ -54,7 +54,7 @@ def auth_callback(code):
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
         
-        
+        return {"message": "autenticacion exitosa"}
 
     except Exception as e:
         return {"error": f"Error durante el proceso de autenticación: {e}"}
