@@ -34,17 +34,18 @@ def get_auth_url():
     
 def auth_callback(code):
     try:
+        base_path = os.path.abspath(os.path.dirname(__file__))
         flow = InstalledAppFlow.from_client_secrets_file(
-            'client_4836.json',
+            os.path.join(base_path, "client_4836.json"),
             SCOPES,
-            redirect_uri="https://miapp.com/callback/"
+            redirect_uri="https://etl-machine-learning-api-movie.onrender.com/callback/"
         )
         
         # Obtención de credenciales usando el código de autorización
-        creds = flow.fetch_token(authorization_response=f"https://miapp.com/callback/?code={code}")
+        creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/callback/?code={code}")
 
         # Almacenar las credenciales en un archivo pickle para no tener que pedir autorización nuevamente
-        token_path = 'data/token.pickle'
+        token_path = os.path.join(base_path, "data", "client_4836.json")
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
