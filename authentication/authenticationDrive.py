@@ -44,15 +44,16 @@ def auth_callback(code):
     
         # Obtain credentials using the authorization code
         creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/?code={code}")
-        
+        print(creds.items())
         # Save credentials to a pickle file (optional)
         token_path = os.path.join(base_path, "data", "client_4836.json")
+        
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)  # Save credentials for future use (optional)
 
         # Create the Drive service
-        service = build('drive', 'v3', credentials=creds.dre)
+        service = build('drive', 'v3', credentials=creds)
         return {"message": "Autenticación exitosa", "service": service}
     except Exception as e:
         return {"error": f"Error during authentication: {e}"}
