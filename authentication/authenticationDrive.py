@@ -52,7 +52,8 @@ def auth_callback(code):
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)  # Save credentials for future use (optional)
-
+        creds = pickle.load(token)
+        
         # Create the Drive service
         service = build('drive', 'v3', credentials=creds)
         return {"message": "Autenticación exitosa", "service": service}
