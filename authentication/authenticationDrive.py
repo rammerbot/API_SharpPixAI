@@ -30,12 +30,24 @@ def request_creds():
     creds = None
     if os.path.exists(SECRET_CLIENT):
         flow = InstalledAppFlow.from_client_secrets_file(SECRET_CLIENT, SCOPES)
-        creds = flow.run_local_server(port=0)
+        
+        # Capturamos la URL de autenticación
+        auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
+        print(f"Por favor, visita esta URL para autorizar la aplicación: {auth_url}")
+        
+        # Le pedimos al usuario que ingrese el código de autorización
+        code = input("Introduce el código de autorización: ")
+        
+        # Intercambiamos el código por las credenciales
+        creds = flow.fetch_token(authorization_response=code)
+        
+        # Guardamos las credenciales en un archivo para futuras ejecuciones
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
+        
         return Credentials.from_authorized_user_file('token.json', SCOPES)
     else:
-        print('credentials not present')
+        print('El archivo de credenciales no está presente')
         sys.exit(1)
 
 def get_creds():
