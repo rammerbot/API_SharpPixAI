@@ -37,7 +37,7 @@ def auth_callback(code):
     try:
         base_path = os.path.abspath(os.path.dirname(__file__))
         token_path = os.path.join(base_path, "data", "token.pickle")
-        client_secret_path = os.path.join(base_path, "client_secret_4836.json")
+        client_secret_path = os.path.join(base_path, "client_4836.json")
 
         # Completar el flujo de autenticación con el código proporcionado
         flow = InstalledAppFlow.from_client_secrets_file(
