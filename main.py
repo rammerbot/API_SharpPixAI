@@ -33,7 +33,6 @@ def autenticate():
 @app.get("/callback_video/")
 def autenticate(code:str):
     service = auth_callback(code)
-    service
     if service:
         download_files = download_folder(service, "videos")
         compress_video(service, download_files[0], download_files[1])

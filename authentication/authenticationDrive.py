@@ -53,11 +53,6 @@ def auth_callback(code):
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
-
-        if os.path.exists(token_path):
-            print("Cargando token existente...")
-            with open(token_path, 'rb') as token:
-                creds = pickle.load(token)
         
             service = build('drive', 'v3', credentials=creds)
             return service
