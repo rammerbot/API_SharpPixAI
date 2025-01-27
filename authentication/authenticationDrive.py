@@ -54,7 +54,7 @@ def auth_callback(code):
             pickle.dump(creds, token)  # Save credentials for future use (optional)
 
         # Create the Drive service
-        service = build('drive', 'v3', credentials=creds.access_token)
+        service = build('drive', 'v3', credentials=creds)
         return {"message": "Autenticación exitosa", "service": service}
     except Exception as e:
         return {"error": f"Error during authentication: {e}"}
