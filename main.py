@@ -22,7 +22,7 @@ def read_root():
 @app.get("/test_video")
 def autenticate():
     service = get_auth_url()
-    return service.items
+    return service.items()
     # if service:
     #     download_files = download_folder(service, "videos")
     #     compress_video(service, download_files[0], download_files[1])
