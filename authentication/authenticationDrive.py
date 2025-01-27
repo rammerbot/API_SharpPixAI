@@ -48,13 +48,13 @@ def auth_callback(code):
 
         # Obtener el token de acceso usando el código
         creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/?code={code}")
-
+        print(type(creds))  # Esto debería mostrar <class 'google.oauth2.credentials.Credentials'>
         # Guardar el token
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
         
-        return {"message": "autenticacion exitosa"}
+        return {"message": "Autenticación exitosa, token guardado."}
 
     except Exception as e:
         return {"error": f"Error durante el proceso de autenticación: {e}"}
