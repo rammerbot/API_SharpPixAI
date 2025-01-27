@@ -19,18 +19,18 @@ app = FastAPI(
 def read_root():
     return {"Hello": "World"}
     
-@app.get("/test")
+@app.get("/test_video")
 def autenticate():
     service = get_auth_url()
-    return service
-    # if service:
-    #     download_files = download_folder(service, "videos")
-    #     compress_video(service, download_files[0], download_files[1])
-    #     return {"message":"success"}
-    # else:
-    #     return {"error":"error al autenticar"}
+    service
+    if service:
+        download_files = download_folder(service, "videos")
+        compress_video(service, download_files[0], download_files[1])
+        return {"message":"success"}
+    else:
+        return {"error":"error al autenticar"}
         
-@app.get("/callback/")
+@app.get("/callback_video/")
 def autenticate(code:str):
     service = auth_callback(code)
     return service

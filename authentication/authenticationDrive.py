@@ -54,7 +54,13 @@ def auth_callback(code):
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
 
-        return {"message": "Autenticación exitosa, token guardado."}
+        if os.path.exists(token_path):
+            print("Cargando token existente...")
+            with open(token_path, 'rb') as token:
+                creds = pickle.load(token)
+        
+            service = build('drive', 'v3', credentials=creds)
+            return service
 
     except Exception as e:
         return {"error": f"Error durante el proceso de autenticación: {e}"}
