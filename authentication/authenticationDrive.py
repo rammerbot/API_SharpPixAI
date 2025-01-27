@@ -14,12 +14,12 @@ SCOPES = [
 ]
 
 def get_auth_url():
-    """Genera la URL de autorización."""
+    """Generates the authorization URL."""
     try:
         base_path = os.path.abspath(os.path.dirname(__file__))
         client_secret_path = os.path.join(base_path, "client_4836.json")
 
-        # Iniciar el flujo de autenticación
+        # Initiate the flow of authentication
         flow = InstalledAppFlow.from_client_secrets_file(
             client_secret_path,
             SCOPES,
@@ -28,9 +28,9 @@ def get_auth_url():
         auth_url, _ = flow.authorization_url(prompt='consent')
 
         return {"auth_url": auth_url}
-    
+
     except Exception as e:
-        return {"error": f"Error al generar la URL de autorización: {e}"}
+        return {"error": f"Error generating the authorization URL: {e}"}
     
 def auth_callback(code):
     try:
