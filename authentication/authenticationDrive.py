@@ -16,7 +16,7 @@ def get_auth_url():
     """Genera la URL de autorización."""
     try:
         base_path = os.path.abspath(os.path.dirname(__file__))
-        client_secret_path = os.path.join(base_path, "client_secret_4836.json")
+        client_secret_path = os.path.join(base_path, "client_4836.json")
 
         # Iniciar el flujo de autenticación
         flow = InstalledAppFlow.from_client_secrets_file(
