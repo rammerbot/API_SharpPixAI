@@ -53,12 +53,15 @@ def auth_callback(code):
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
-            service = build('drive', 'v3', credentials=creds)
-            # return service
-            return service
-#         return service
+
+        # Crear el servicio de Google Drive utilizando las credenciales
+        service = build('drive', 'v3', credentials=creds)
+
+        return service
+
     except Exception as e:
         return {"error": f"Error durante el proceso de autenticación: {e}"}
+
 
 
 
