@@ -34,7 +34,7 @@ def autenticate():
 def autenticate(code:str):
     service = auth_callback(code)
     print(service)
-    return service.service
+    return service
     # if service:
     #     download_files = download_folder(service, "videos")
     #     compress_video(service, download_files[0], download_files[1])
