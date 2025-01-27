@@ -1,4 +1,5 @@
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import os
@@ -48,13 +49,25 @@ def auth_callback(code):
 
         # Obtener el token de acceso usando el código
         creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/?code={code}")
-        print(type(creds))  # Esto debería mostrar <class 'google.oauth2.credentials.Credentials'>
+        
+        # Convertir credenciales en credenciales validas
+        creds = Credentials.from_authorized_user_info(info=creds)
+
+        # Verificar si las credenciales son válidas
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                return {"error": "Las credenciales no son válidas o han expirado."}
+
         # Guardar el token
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
+
+        service = build('drive', 'v3', credentials=creds)
         
-        return {"message": "Autenticación exitosa, token guardado."}
+        return service
 
     except Exception as e:
         return {"error": f"Error durante el proceso de autenticación: {e}"}
