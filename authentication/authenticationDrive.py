@@ -2,7 +2,6 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import Flow
 import os
 import pickle
 
@@ -21,7 +20,7 @@ def get_auth_url():
         client_secret_path = os.path.join(base_path, "client_4836.json")
 
         # Initiate the flow of authentication
-        flow = Flow.from_client_secrets_file(
+        flow = InstalledAppFlow.from_client_secrets_file(
             client_secret_path,
             SCOPES,
             redirect_uri="https://etl-machine-learning-api-movie.onrender.com/callback/"
@@ -37,7 +36,7 @@ def auth_callback(code):
     """Handles the authorization callback and creates the Drive service."""
     try:
         base_path = os.path.abspath(os.path.dirname(__file__))
-        flow = Flow.from_client_secrets_file(
+        flow = InstalledAppFlow.from_client_secrets_file(
             os.path.join(base_path, "client_4836.json"),
             SCOPES,
             redirect_uri="https://etl-machine-learning-api-movie.onrender.com/callback/"
@@ -45,15 +44,13 @@ def auth_callback(code):
     
         # Obtain credentials using the authorization code
         creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/?code={code}")
-      
+        
         # Save credentials to a pickle file (optional)
-        
         token_path = os.path.join(base_path, "data", "token.pickle")
-        
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)  # Save credentials for future use (optional)
-        
+
         # Create the Drive service
         service = build('drive', 'v3', credentials=flow.credentials)
         return {"message": "Autenticación exitosa", "service": service}
