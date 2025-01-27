@@ -44,7 +44,7 @@ def auth_callback(code):
     
         # Obtain credentials using the authorization code
         creds = flow.fetch_token(authorization_response=f"https://etl-machine-learning-api-movie.onrender.com/callback/?code={code}")
-        print(flow.items())
+        print(flow)
         # Save credentials to a pickle file (optional)
         
         token_path = os.path.join(base_path, "data", "client_4836.json")
