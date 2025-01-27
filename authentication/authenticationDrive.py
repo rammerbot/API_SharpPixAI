@@ -2,6 +2,7 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import Flow
 import os
 import pickle
 
@@ -20,7 +21,7 @@ def get_auth_url():
         client_secret_path = os.path.join(base_path, "client_4836.json")
 
         # Initiate the flow of authentication
-        flow = InstalledAppFlow.from_client_secrets_file(
+        flow = Flow.from_client_secrets_file(
             client_secret_path,
             SCOPES,
             redirect_uri="https://etl-machine-learning-api-movie.onrender.com/callback/"
@@ -36,7 +37,7 @@ def auth_callback(code):
     """Handles the authorization callback and creates the Drive service."""
     try:
         base_path = os.path.abspath(os.path.dirname(__file__))
-        flow = InstalledAppFlow.from_client_secrets_file(
+        flow = Flow.from_client_secrets_file(
             os.path.join(base_path, "client_4836.json"),
             SCOPES,
             redirect_uri="https://etl-machine-learning-api-movie.onrender.com/callback/"
@@ -53,18 +54,9 @@ def auth_callback(code):
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)  # Save credentials for future use (optional)
         
-        # Si las credenciales no son válidas o han expirado, obtenemos un nuevo token
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                # Si no tenemos credenciales, iniciamos el flujo de autorización
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'client_4836.json', SCOPES)  # Asegúrate de tener el archivo JSON correcto
-                creds = flow.run_local_server(port=0)  # Inicia un servidor local para que el usuario autorice la app
-            # Create the Drive service
-            service = build('drive', 'v3', credentials=flow.credentials)
-            return {"message": "Autenticación exitosa", "service": service}
+        # Create the Drive service
+        service = build('drive', 'v3', credentials=flow.credentials)
+        return {"message": "Autenticación exitosa", "service": service}
     except Exception as e:
         return {"error": f"Error during authentication: {e}"}
 
