@@ -48,7 +48,7 @@ def auth_callback(code):
       
         # Save credentials to a pickle file (optional)
         
-        token_path = os.path.join(base_path, "data", "client_4836.json")
+        token_path = os.path.join(base_path, "data", "token.pickle")
         
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
