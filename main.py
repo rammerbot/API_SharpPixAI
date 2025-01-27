@@ -34,12 +34,13 @@ def autenticate():
 def autenticate(code:str):
     service = auth_callback(code)
     print(service)
-    if service:
-        download_files = download_folder(service, "videos")
-        compress_video(service, download_files[0], download_files[1])
-        return {"message":"success"}
-    else:
-        return {"error":"error al autenticar"}
+    return service
+    # if service:
+    #     download_files = download_folder(service, "videos")
+    #     compress_video(service, download_files[0], download_files[1])
+    #     return {"message":"success"}
+    # else:
+    #     return {"error":"error al autenticar"}
 
 # @app.get("/optimize_images")	
 # def read_clear_drive():
