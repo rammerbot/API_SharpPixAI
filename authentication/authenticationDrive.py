@@ -52,11 +52,19 @@ def auth_callback(code):
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)  # Save credentials for future use (optional)
-        creds = pickle.load(token)
         
-        # Create the Drive service
-        service = build('drive', 'v3', credentials=creds)
-        return {"message": "Autenticación exitosa", "service": service}
+        # Si las credenciales no son válidas o han expirado, obtenemos un nuevo token
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                # Si no tenemos credenciales, iniciamos el flujo de autorización
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'client_4836.json', SCOPES)  # Asegúrate de tener el archivo JSON correcto
+                creds = flow.run_local_server(port=0)  # Inicia un servidor local para que el usuario autorice la app
+            # Create the Drive service
+            service = build('drive', 'v3', credentials=creds)
+            return {"message": "Autenticación exitosa", "service": service}
     except Exception as e:
         return {"error": f"Error during authentication: {e}"}
 
