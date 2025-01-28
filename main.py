@@ -1,66 +1,57 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response, Depends
+from fastapi.responses import RedirectResponse
+from google_auth_oauthlib.flow import Flow
+from google.oauth2.credentials import Credentials
 
-from authentication import search_file
-from download_files import download_folder
-from duplicate_detector import remove_duplicates_local
-from video_optimizer import compress_video
-from image_optimizer import optimize_image
-
-
-
+import secrets
 
 app = FastAPI()
 
+# Configuración del flujo OAuth
+CLIENT_SECRETS_FILE = "client_secrets.json"
+SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
 
+# Almacenar estados temporalmente (usar Redis en producción)
+oauth_states = {}
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/services")
-def read_root():
-    service = search_file()
-    return service
-
-
+@app.get("/auth/google")
+async def auth_google(request: Request):
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
     
-# @app.get("/test")
-# def read_clear_drive():
-#     service = authenticate()
-#     if service:
-#         download_files = download_folder(service, "videos")
-#         compress_video(service, download_files[0], download_files[1])
-#         return {"message":"success"}
-#     else:
-#         return {"error":"error al autenticar"}
-        
-# @app.get("/optimize_images")	
-# def read_clear_drive():
-#     service = authenticate()
-#     if service:
-#        dowloaded_files = download_folder(service, "images")
-#        optimize_image(dowloaded_files[0], dowloaded_files[1])
-
-#     else:
-#         return {"error":"error al autenticar"}
-       
-
-# @app.get("/delete_duplicates")
-# def read_clear_drive():
-#     service = authenticate()
-#     if service:
-#         dowloaded_files = download_folder(service, "all")
-#         remove_duplicates_local(service)
-#     else:
-#         return {"error":"error al autenticar"}
+    # Generar un state único y guardarlo
+    state = secrets.token_urlsafe(16)
+    oauth_states[state] = None  # Puedes almacenar datos del usuario aquí
     
-# @app.get("/orderer_files")
-# def read_clear_drive():
-#     service = authenticate()
-#     if service:
-#         dowloaded_files = download_folder(service, "all")
-#     else:
-#         return {"error":"error al autenticar"}
- 
-                
+    authorization_url, _ = flow.authorization_url(
+        access_type="offline",
+        include_granted_scopes="true",
+        state=state  # Pasamos el state a Google
+    )
+    
+    return {'message':authorization_url}
+
+@app.get("/callback")
+async def callback(request: Request, state: str, code: str = None):
+    # Verificar el state (previene CSRF)
+    if state not in oauth_states:
+        return {"error": "State inválido"}
+    
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
+    
+    # Obtener el token
+    flow.fetch_token(code=code)
+    credentials = flow.credentials
+    
+    # Guardar credenciales (ejemplo: en base de datos)
+    # ...
+    
+    return {"message": "Autenticación exitosa", "token": credentials.token}
