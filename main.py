@@ -9,7 +9,13 @@ app = FastAPI()
 
 # Configuración del flujo OAuth
 CLIENT_SECRETS_FILE = "client_secrets.json"
-SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+SCOPES = [
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/docs',
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/drive.metadata.readonly',
+    'https://www.googleapis.com/auth/drive.readonly'
+]
 REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
 
 # Almacenar estados temporalmente (usar Redis en producción)
