@@ -23,6 +23,12 @@ REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
 # Almacenar estados temporalmente (usar Redis en producción)
 oauth_states = {}
 
+# Función para obtener credenciales (MOVIDA AL PRINCIPIO)
+async def get_credentials(request: Request):
+    # Implementa lógica real para obtener credenciales
+    token = request.query_params.get("token")  # Ejemplo básico, usa cookies en producción
+    return Credentials(token)
+
 @app.get("/auth/google")
 async def auth_google(request: Request):
     flow = Flow.from_client_secrets_file(
@@ -31,21 +37,19 @@ async def auth_google(request: Request):
         redirect_uri=REDIRECT_URI
     )
     
-    # Generar un state único y guardarlo
     state = secrets.token_urlsafe(16)
-    oauth_states[state] = None  # Puedes almacenar datos del usuario aquí
+    oauth_states[state] = None
     
     authorization_url, _ = flow.authorization_url(
         access_type="offline",
         include_granted_scopes="true",
-        state=state  # Pasamos el state a Google
+        state=state
     )
     
-    return {'message':authorization_url}
+    return {'message': authorization_url}
 
 @app.get("/callback")
 async def callback(request: Request, state: str, code: str = None):
-    # Verificar el state (previene CSRF)
     if state not in oauth_states:
         return {"error": "State inválido"}
     
@@ -55,12 +59,8 @@ async def callback(request: Request, state: str, code: str = None):
         redirect_uri=REDIRECT_URI
     )
     
-    # Obtener el token
     flow.fetch_token(code=code)
     credentials = flow.credentials
-    
-    # Guardar credenciales (ejemplo: en base de datos)
-    # ...
     
     return {"message": "Autenticación exitosa", "token": credentials.token}
 
@@ -68,7 +68,6 @@ async def callback(request: Request, state: str, code: str = None):
 async def list_files(credentials: Credentials = Depends(get_credentials)):
     drive_service = build("drive", "v3", credentials=credentials)
     
-    # Primera solicitud
     results = drive_service.files().list(
         pageSize=100,
         fields="nextPageToken, files(id, name, mimeType, createdTime)"
@@ -76,7 +75,6 @@ async def list_files(credentials: Credentials = Depends(get_credentials)):
     
     files = results.get("files", [])
     
-    # Manejo de paginación (opcional)
     while "nextPageToken" in results:
         next_page_token = results["nextPageToken"]
         results = drive_service.files().list(
@@ -87,9 +85,3 @@ async def list_files(credentials: Credentials = Depends(get_credentials)):
         files.extend(results.get("files", []))
     
     return files
-
-# Función para obtener credenciales
-async def get_credentials(request: Request):
-    # Implementa lógica real para obtener credenciales
-    token = request.query_params.get("token")  # Ejemplo básico, usa cookies en producción
-    return Credentials(token)
