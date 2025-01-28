@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Request, Response, Depends
+from fastapi import FastAPI, Request, Response, Depends, status
 from fastapi.responses import RedirectResponse
 from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-
+from typing import Optional, List, Dict
+import os
 import secrets
 
 app = FastAPI()
@@ -61,3 +63,33 @@ async def callback(request: Request, state: str, code: str = None):
     # ...
     
     return {"message": "Autenticación exitosa", "token": credentials.token}
+
+@app.get("/files", response_model=List[Dict[str, str]])
+async def list_files(credentials: Credentials = Depends(get_credentials)):
+    drive_service = build("drive", "v3", credentials=credentials)
+    
+    # Primera solicitud
+    results = drive_service.files().list(
+        pageSize=100,
+        fields="nextPageToken, files(id, name, mimeType, createdTime)"
+    ).execute()
+    
+    files = results.get("files", [])
+    
+    # Manejo de paginación (opcional)
+    while "nextPageToken" in results:
+        next_page_token = results["nextPageToken"]
+        results = drive_service.files().list(
+            pageSize=100,
+            fields="nextPageToken, files(id, name, mimeType, createdTime)",
+            pageToken=next_page_token
+        ).execute()
+        files.extend(results.get("files", []))
+    
+    return files
+
+# Función para obtener credenciales
+async def get_credentials(request: Request):
+    # Implementa lógica real para obtener credenciales
+    token = request.query_params.get("token")  # Ejemplo básico, usa cookies en producción
+    return Credentials(token)
