@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Response, Depends, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -22,12 +22,6 @@ REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
 
 # Almacenar estados temporalmente (usar Redis en producción)
 oauth_states = {}
-
-# Función para obtener credenciales (MOVIDA AL PRINCIPIO)
-async def get_credentials(request: Request):
-    # Implementa lógica real para obtener credenciales
-    token = request.query_params.get("token")  # Ejemplo básico, usa cookies en producción
-    return Credentials(token)
 
 @app.get("/auth/google")
 async def auth_google(request: Request):
@@ -62,12 +56,10 @@ async def callback(request: Request, state: str, code: str = None):
     flow.fetch_token(code=code)
     credentials = flow.credentials
     
-    return {"message": "Autenticación exitosa", "token": credentials.token}
-
-@app.get("/files", response_model=List[Dict[str, str]])
-async def list_files(credentials: Credentials = Depends(get_credentials)):
+    # Construir el servicio de Google Drive
     drive_service = build("drive", "v3", credentials=credentials)
     
+    # Listar archivos
     results = drive_service.files().list(
         pageSize=100,
         fields="nextPageToken, files(id, name, mimeType, createdTime)"
@@ -84,4 +76,4 @@ async def list_files(credentials: Credentials = Depends(get_credentials)):
         ).execute()
         files.extend(results.get("files", []))
     
-    return files
+    return JSONResponse(content=files)
