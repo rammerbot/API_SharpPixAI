@@ -14,9 +14,9 @@ app = FastAPI()
 # Configuración del flujo OAuth
 CLIENT_SECRETS_FILE = "client_secrets.json"
 SCOPES = [
-    "https://www.googleapis.com/auth/photoslibrary.readonly",
     "https://www.googleapis.com/auth/photoslibrary.appendonly",
     "https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata",
+    "https://www.googleapis.com/auth/photoslibrary.readonly",
     "https://www.googleapis.com/auth/photoslibrary.sharing"
 ]
 
