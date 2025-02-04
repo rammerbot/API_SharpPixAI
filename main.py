@@ -36,9 +36,9 @@ async def auth_google(request: Request):
     state = secrets.token_urlsafe(16)
     oauth_states[state] = None
     
+    # Quita include_granted_scopes o establece en "false"
     authorization_url, _ = flow.authorization_url(
         access_type="offline",
-        include_granted_scopes="true",
         state=state
     )
     
