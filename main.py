@@ -26,7 +26,7 @@ REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
 oauth_states = {}
 
 @app.get("/auth/google")
-async def auth_google(request: Request):
+async def auth_google(request: None):
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
