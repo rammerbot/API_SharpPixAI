@@ -1,8 +1,8 @@
-from authentication.authenticationDrive import auth_callback, get_auth_url
+from authentication.authenticationDrive import request_creds, authenticate
 
 
 __all__ = [
-    "auth_callback",
-    "get_auth_url"
+    "request_creds",
+    "authenticate"
 
     ]

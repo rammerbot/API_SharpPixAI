@@ -1,193 +1,104 @@
 import os
 import sys
+from typing import Optional, List, Dict
+import secrets
+import requests
 
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
-from google.auth.transport import Request
+from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from fastapi import Request
 
 
-
-
-
-
+# Configuración del flujo OAuth
+CLIENT_SECRETS_FILE = "client_secrets.json"
 
 SCOPES = [
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/docs',
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/drive.metadata.readonly',
-    'https://www.googleapis.com/auth/drive.readonly'
+    "https://www.googleapis.com/auth/photoslibrary.appendonly",
+    "https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata",
+    "https://www.googleapis.com/auth/photoslibrary.readonly",
+    "https://www.googleapis.com/auth/photoslibrary.sharing"
 ]
 
+REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
+
+# Almacenar estados temporalmente (usar Redis en producción)
+oauth_states = {}
 
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 SECRET_CLIENT = os.path.join(BASE_PATH, "client_secret_483676039355-935r0fq0itqhvrs59m0j02q93ga0krmv.apps.googleusercontent.com.json")
 TOKEN = os.path.join(BASE_PATH, 'data', 'token.pickle')
 
-
 def request_creds():
-    creds = None
-    if os.path.exists(SECRET_CLIENT):
-        flow = InstalledAppFlow.from_client_secrets_file(SECRET_CLIENT, SCOPES)
-        
-        # Capturamos la URL de autenticación
-        auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
-        print(f"Por favor, visita esta URL para autorizar la aplicación: {auth_url}")
-        
-        # Le pedimos al usuario que ingrese el código de autorización
-        code = input("Introduce el código de autorización: ")
-        
-        # Intercambiamos el código por las credenciales
-        creds = flow.fetch_token(authorization_response=code)
-        
-        # Guardamos las credenciales en un archivo para futuras ejecuciones
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-        
-        return Credentials.from_authorized_user_file('token.json', SCOPES)
-    else:
-        print('El archivo de credenciales no está presente')
-        sys.exit(1)
 
-def get_creds():
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
     
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        return creds
-    return request_creds()
+    state = secrets.token_urlsafe(16)
+    oauth_states[state] = None
+    
+    # Quita include_granted_scopes o establece en "false"
+    authorization_url, _ = flow.authorization_url(
+        access_type="offline",
+        state=state
+    )
+    
+    return {'message': authorization_url}
 
+def authenticate(request):
+    
+    # Obtener el código de autorización desde la URL
+    code = request.query_params.get("code")
+    
+    if not code:
+        return {"error": "No authorization code found"}
 
-def search_file():
-    creds = get_creds()
     try:
-        service = build('drive', 'v3',credentials=creds)
-        if service:
-            return {'message': f'objeto creado: {service}'}
+        # Cargar la configuración OAuth2
+        flow = Flow.from_client_secrets_file(
+            CLIENT_SECRETS_FILE,
+            scopes=SCOPES,
+            redirect_uri=REDIRECT_URI  # Asegúrate de usar el mismo redirect_uri que en Google Cloud
+        )
+
+        # Obtener el token de acceso
+        flow.fetch_token(code=code, include_client_id=True, scope=SCOPES)
+
+        credentials = flow.credentials  # Obtenemos las credenciales
+
+        # Construir el servicio de Google Photos
+        service = build('photoslibrary', 'v1', credentials=credentials, static_discovery=False)
+        
+        # Listar medios (fotos y videos)
+        media_items = []
+        next_page_token = None
+        
+        while True:
+            # Hacer la solicitud a la API de Google Photos
+            response = service.mediaItems().list(
+                pageSize=100,  # Máximo de 100 elementos por página
+                pageToken=next_page_token
+            ).execute()
+            
+            # Agregar los medios a la lista
+            media_items.extend(response.get('mediaItems', []))
+            
+            # Verificar si hay más páginas
+            next_page_token = response.get('nextPageToken')
+            if not next_page_token:
+                break
+        
+        # Devolver la lista de medios
+        return {
+            "access_token": credentials.token,
+            "refresh_token": credentials.refresh_token,
+            "expires_in": credentials.expiry,
+            "token_type": credentials.token_uri,
+            "media_items": media_items  # Lista de medios
+        }
     
     except Exception as e:
-        return {'error' : f'error al crear servicio: {e}'}
-
-
-# from googleapiclient.discovery import build
-# from google_auth_oauthlib.flow import InstalledAppFlow
-# from google.auth.transport.requests import Request
-# import os
-# import pickle
-
-# # Alcances necesarios para el acceso a Google Drive
-# SCOPES = [
-#     'https://www.googleapis.com/auth/drive',
-#     'https://www.googleapis.com/auth/drive.file',
-#     'https://www.googleapis.com/auth/drive.readonly',
-#     'https://www.googleapis.com/auth/drive.metadata.readonly'
-# ]
-
-# def authenticate():
-#     """Autentica con Google Drive y devuelve el servicio autenticado."""
-#     creds = None
-#     try:
-#         # Base relativa al script
-#         base_path = os.path.abspath(os.path.dirname(__file__))
-#         token_path = os.path.join(base_path, "data", "token.pickle")
-#         client_secret_path = os.path.join(base_path, "client_secret_483676039355-935r0fq0itqhvrs59m0j02q93ga0krmv.apps.googleusercontent.com.json")
-
-#         # Verificar si existe un token almacenado previamente
-#         if os.path.exists(token_path):
-#             print("Cargando token existente...")
-#             with open(token_path, 'rb') as token:
-#                 creds = pickle.load(token)
-
-#         # Si no hay credenciales válidas, iniciar autenticación
-#         if not creds or not creds.valid:
-#             if creds and creds.expired and creds.refresh_token:
-#                 print("Actualizando token existente...")
-#                 creds.refresh(Request())
-#             else:
-#                 if not os.path.exists(client_secret_path):
-#                     raise FileNotFoundError(f"El archivo client_secret.json no se encuentra en: {client_secret_path}")
-#                 print("Iniciando flujo de autenticación...")
-
-#                 flow = InstalledAppFlow.from_client_secrets_file(
-#                     client_secret_path,
-#                     SCOPES
-#                 )
-#                 # Capturar la URL de autenticación
-#                 auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
-
-#                 print(f"Por favor, ve a este enlace para autorizar la aplicación: {auth_url}")
-#                 # Si deseas capturar el código manualmente, puedes agregar un paso adicional aquí
-
-#                 # Nota: El siguiente paso es manual; el usuario debe ingresar el código de autorización
-#                 code = input("Introduce el código de autorización: ")
-#                 creds = flow.fetch_token(authorization_response=code)
-
-#             # Guardar el token en un archivo para futuras ejecuciones
-#             print("Guardando token...")
-#             os.makedirs(os.path.dirname(token_path), exist_ok=True)  # Crear carpeta si no existe
-#             with open(token_path, 'wb') as token:
-#                 pickle.dump(creds, token)
-#             print(f"Token guardado exitosamente en: {token_path}")
-
-#         else:
-#             print("Token válido cargado.")
-
-#         # Construir el servicio de Google Drive
-#         service = build('drive', 'v3', credentials=creds)
-#         return service
-
-#     except Exception as e:
-#         print(f"Error durante el proceso de autenticación o guardado: {e}")
-#         return None
-
-
-
-# # def authenticate():
-# #     """Autentica con Google Drive y devuelve el servicio autenticado."""
-# #     creds = None
-# #     try:
-# #         # Base relativa al script
-# #         base_path = os.path.abspath(os.path.dirname(__file__))
-# #         token_path = os.path.join(base_path, "data", "token.pickle")
-# #         client_secret_path = os.path.join(base_path, "client_secret_483676039355-ig9cahphvluaq6eqocvi9lv6o9h2dq0i.apps.googleusercontent.com.json")
-
-# #         # Verificar si existe un token almacenado previamente
-# #         if os.path.exists(token_path):
-# #             print("Cargando token existente...")
-# #             with open(token_path, 'rb') as token:
-# #                 creds = pickle.load(token)
-
-# #         # Si no hay credenciales válidas, iniciar autenticación
-# #         if not creds or not creds.valid:
-# #             if creds and creds.expired and creds.refresh_token:
-# #                 print("Actualizando token existente...")
-# #                 creds.refresh(Request())
-# #             else:
-# #                 if not os.path.exists(client_secret_path):
-# #                     raise FileNotFoundError(f"El archivo client_secret.json no se encuentra en: {client_secret_path}")
-# #                 print("Iniciando flujo de autenticación...")
-# #                 flow = InstalledAppFlow.from_client_secrets_file(
-# #                     client_secret_path,
-# #                     SCOPES
-# #                 )
-# #                 creds = flow.run_local_server(port=0)
-
-# #             # Guardar el token en un archivo para futuras ejecuciones
-# #             print("Guardando token...")
-# #             os.makedirs(os.path.dirname(token_path), exist_ok=True)  # Crear carpeta si no existe
-# #             with open(token_path, 'wb') as token:
-# #                 pickle.dump(creds, token)
-# #             print(f"Token guardado exitosamente en: {token_path}")
-
-# #         else:
-# #             print("Token válido cargado.")
-
-# #         # Construir el servicio de Google Drive
-# #         service = build('drive', 'v3', credentials=creds)
-# #         return service
-
-# #     except Exception as e:
-# #         print(f"Error durante el proceso de autenticación o guardado: {e}")
-# #         return None
+        return {"error": f"Error obtaining access token or listing media items: {str(e)}"}
