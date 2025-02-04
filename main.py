@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response, Depends, status
+from fastapi import FastAPI, Request, Response, Depends, status
 from fastapi.responses import RedirectResponse, JSONResponse
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
@@ -6,7 +6,7 @@ from google.oauth2.credentials import Credentials
 from typing import Optional, List, Dict
 import os
 import secrets
-from google.auth.transport.requests import Request
+
 import requests
 
 app = FastAPI()
@@ -26,7 +26,7 @@ REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
 oauth_states = {}
 
 @app.get("/auth/google")
-async def auth_google(request: None):
+async def auth_google(request: Request):
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
