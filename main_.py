@@ -65,36 +65,12 @@ async def callback(request: Request):
 
         credentials = flow.credentials  # Obtenemos las credenciales
 
-        # Construir el servicio de Google Photos
-        service = build('photoslibrary', 'v1', credentials=credentials, static_discovery=False)
-        
-        # Listar medios (fotos y videos)
-        media_items = []
-        next_page_token = None
-        
-        while True:
-            # Hacer la solicitud a la API de Google Photos
-            response = service.mediaItems().list(
-                pageSize=100,  # Máximo de 100 elementos por página
-                pageToken=next_page_token
-            ).execute()
-            
-            # Agregar los medios a la lista
-            media_items.extend(response.get('mediaItems', []))
-            
-            # Verificar si hay más páginas
-            next_page_token = response.get('nextPageToken')
-            if not next_page_token:
-                break
-        
-        # Devolver la lista de medios
         return {
             "access_token": credentials.token,
             "refresh_token": credentials.refresh_token,
             "expires_in": credentials.expiry,
-            "token_type": credentials.token_uri,
-            "media_items": media_items  # Lista de medios
+            "token_type": credentials.token_uri
         }
     
     except Exception as e:
-        return {"error": f"Error obtaining access token or listing media items: {str(e)}"}
+        return {"error": f"Error obtaining access token: {str(e)}"}
