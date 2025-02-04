@@ -16,7 +16,8 @@ SCOPES = [
     'https://www.googleapis.com/auth/docs',
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/drive.metadata.readonly',
-    'https://www.googleapis.com/auth/drive.readonly'
+    'https://www.googleapis.com/auth/drive.readonly',
+    "https://www.googleapis.com/auth/photoslibrary.readonly"
 ]
 REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
 
@@ -56,24 +57,19 @@ async def callback(request: Request, state: str, code: str = None):
     flow.fetch_token(code=code)
     credentials = flow.credentials
     
-    # Construir el servicio de Google Drive
-    drive_service = build("drive", "v3", credentials=credentials)
+    # Construir el servicio de Google photos
+    drive_service = build("photoslibrary", "v1", credentials=credentials)
     
-    # Listar archivos
-    results = drive_service.files().list(
-        pageSize=100,
-        fields="nextPageToken, files(id, name, mimeType, createdTime)"
-    ).execute()
+    # Construir el servicio de Google photos
+    photo_service = build("photoslibrary", "v1", credentials=credentials)
     
-    files = results.get("files", [])
-    
-    while "nextPageToken" in results:
-        next_page_token = results["nextPageToken"]
-        results = drive_service.files().list(
-            pageSize=100,
-            fields="nextPageToken, files(id, name, mimeType, createdTime)",
-            pageToken=next_page_token
-        ).execute()
-        files.extend(results.get("files", []))
-    
-    return JSONResponse(content=files)
+    results = photo_service.mediaItems().list(pageSize=10).execute()
+    items = results.get("mediaItems", [])
+
+    if not items:
+        print("No se encontraron fotos.")
+        return []
+
+    for item in items:
+        print(f"Nombre: {item['filename']} - URL: {item['baseUrl']}")
+    return JSONResponse(content=items)
