@@ -29,7 +29,7 @@ BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 SECRET_CLIENT = os.path.join(BASE_PATH, "client_secret_483676039355-935r0fq0itqhvrs59m0j02q93ga0krmv.apps.googleusercontent.com.json")
 TOKEN = os.path.join(BASE_PATH, 'data', 'token.pickle')
 
-def request_creds():
+def request_creds(request):
 
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
