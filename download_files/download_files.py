@@ -21,7 +21,7 @@ def download_media_item(request, callback):
     os.makedirs(download_dir, exist_ok=True)
 
     media_items = authenticate(request, callback)
-    return media_items['media_items']
+    return media_items.get('media_items')
 
     # files_path = []
 
