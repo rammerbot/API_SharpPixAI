@@ -20,11 +20,11 @@ def download_media_item(request, callback):
     # Crear el directorio de descargas si no existe
     os.makedirs(download_dir, exist_ok=True)
 
+    # Autenticacion del usuario y obtener el servicio con la metadata de los archivos
     media_items = authenticate(request, callback)
+    # Obtener lista de metadatos del objeto
     media_items = media_items.get('media_items')
-
-    files_path = []
-
+    # Iteracion de lista de metadatos
     for media_item in media_items:
 
         try:
@@ -48,11 +48,8 @@ def download_media_item(request, callback):
             # Guardar el archivo en el directorio de descargas
             with open(file_path, "wb") as file:
                 file.write(response.content)
-            
-            files_path.append(file_path)
-            print(file_path)
-        
+
         except Exception as e:
             print(f"Error al descargar el archivo {filename}: {str(e)}")
 
-    return files_path
+    return os.listdir(download_dir)
