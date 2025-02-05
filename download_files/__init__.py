@@ -1,4 +1,4 @@
-from download_files.download_files import download_folder
+from download_files.download_files import download_media_item
 
 
-__all__ = ['download_folder']
+__all__ = ['download_media_item']

@@ -7,7 +7,7 @@ app = FastAPI()
 
 @app.get("/auth/google")
 async def auth_google(request: Request):
-    return request_creds(request)
+    return request_creds(request, 'video')
 
 @app.get("/callback")
 async def callback(request: Request):
