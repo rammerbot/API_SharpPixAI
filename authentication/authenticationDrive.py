@@ -20,16 +20,18 @@ SCOPES = [
     "https://www.googleapis.com/auth/photoslibrary.sharing"
 ]
 
-REDIRECT_URI = "https://etl-machine-learning-api-movie.onrender.com/callback/"
+
 
 # Almacenar estados temporalmente (usar Redis en producción)
 oauth_states = {}
 
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
-SECRET_CLIENT = os.path.join(BASE_PATH, "client_secret_483676039355-935r0fq0itqhvrs59m0j02q93ga0krmv.apps.googleusercontent.com.json")
+SECRET_CLIENT = os.path.join(BASE_PATH, "client_secret.json")
 TOKEN = os.path.join(BASE_PATH, 'data', 'token.pickle')
 
-def request_creds(request):
+def request_creds(request, callback):
+
+    REDIRECT_URI = f"https://etl-machine-learning-api-movie.onrender.com/callback_{callback}/"
 
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
@@ -46,7 +48,7 @@ def request_creds(request):
         state=state
     )
     
-    return {'message': authorization_url}
+    return {'message': authorization_url, }
 
 def authenticate(request):
     
@@ -61,7 +63,6 @@ def authenticate(request):
         flow = Flow.from_client_secrets_file(
             CLIENT_SECRETS_FILE,
             scopes=SCOPES,
-            redirect_uri=REDIRECT_URI  # Asegúrate de usar el mismo redirect_uri que en Google Cloud
         )
 
         # Obtener el token de acceso
