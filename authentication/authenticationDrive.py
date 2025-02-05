@@ -65,6 +65,7 @@ def authenticate(request, callback):
         flow = Flow.from_client_secrets_file(
             CLIENT_SECRETS_FILE,
             scopes=SCOPES,
+            redirect_uri=REDIRECT_URI
         )
 
         # Obtener el token de acceso
