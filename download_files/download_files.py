@@ -16,39 +16,38 @@ def download_media_item(request, callback):
     :return: Ruta del archivo descargado.
     """
 
-    download_dir="downloads"
+    download_dir="downloads_" + callback
+    # Crear el directorio de descargas si no existe
+    os.makedirs(download_dir, exist_ok=True)
 
-    media_item = authenticate(request, callback)
-    return media_item
+    media_items = authenticate(request, callback)
 
-    # try:
-    #     # Crear el directorio de descargas si no existe
-    #     os.makedirs(download_dir, exist_ok=True)
-        
-    #     # Obtener la URL base y el nombre del archivo
-    #     base_url = media_item.get("baseUrl")
-    #     filename = media_item.get("filename")
-        
-    #     if not base_url or not filename:
-    #         raise ValueError("El mediaItem no contiene baseUrl o filename.")
-        
-    #     # Construir la URL de descarga (agregar parámetro para máxima resolución)
-    #     download_url = f"{base_url}=d"  # "=d" descarga el archivo en su resolución original
-        
-    #     # Ruta completa del archivo descargado
-    #     file_path = os.path.join(download_dir, filename)
-        
-    #     # Descargar el archivo
-    #     response = requests.get(download_url)
-    #     response.raise_for_status()  # Lanza una excepción si la descarga falla
-        
-    #     # Guardar el archivo en el directorio de descargas
-    #     with open(file_path, "wb") as file:
-    #         file.write(response.content)
-        
-    #     return file_path
-    
-    # except Exception as e:
-    #     print(f"Error al descargar el archivo {filename}: {str(e)}")
-    #     return None
+    for media_item in media_items.values():
 
+        try:
+            # Obtener la URL base y el nombre del archivo
+            base_url = media_item.get("baseUrl")
+            filename = media_item.get("filename")
+            
+            if not base_url or not filename:
+                raise ValueError("El mediaItem no contiene baseUrl o filename.")
+            
+            # Construir la URL de descarga (agregar parámetro para máxima resolución)
+            download_url = f"{base_url}=d"  # "=d" descarga el archivo en su resolución original
+            
+            # Ruta completa del archivo descargado
+            file_path = os.path.join(download_dir, filename)
+            
+            # Descargar el archivo
+            response = requests.get(download_url)
+            response.raise_for_status()  # Lanza una excepción si la descarga falla
+            
+            # Guardar el archivo en el directorio de descargas
+            with open(file_path, "wb") as file:
+                file.write(response.content)
+            
+        
+        except Exception as e:
+            print(f"Error al descargar el archivo {filename}: {str(e)}")
+
+    return file_path

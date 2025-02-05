@@ -25,20 +25,29 @@ SCOPES = [
 # Almacenar estados temporalmente (usar Redis en producción)
 oauth_states = {}
 
+# Variables de credenciales para la conexion con la API de Google Photos
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 SECRET_CLIENT = os.path.join(BASE_PATH, "client_secret.json")
 TOKEN = os.path.join(BASE_PATH, 'data', 'token.pickle')
 
 def request_creds(request, callback):
-
+    """La funcion toma las credenciales para generar una url en la cual 
+    el usuario pueda autenticarse en la plataforma, retorna una url de autenticacion
+    :param request: recibe un objeto tipo request desde directamente del endpoint.
+    :param callback: recibe el tipo de callback que se realizara que es lo que determinara que tipo de funcion se procesara.
+    :return: Url de autenticacion.
+    """
+    # Url de redirecionamiento
     REDIRECT_URI = f"https://etl-machine-learning-api-movie.onrender.com/callback_{callback}/"
 
+    # Optener credenciales para la API 
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
     
+    # Crear token
     state = secrets.token_urlsafe(16)
     oauth_states[state] = None
     
@@ -51,7 +60,15 @@ def request_creds(request, callback):
     return {'message': authorization_url, }
 
 def authenticate(request, callback):
+    """La funcion toma las credenciales del usuario para generar un servicio en Google Photos  
+    retorna un objeto con los datos de los archivos del usuario
+    :param request: recibe un objeto tipo request desde directamente del endpoint.
+    :param callback: recibe el tipo de callback que se realizara que es lo que determinara que tipo de funcion se procesara.
+    :return: un objeto con los datos de los archivos del usuario.
+    """
 
+
+    # Url de redirecionamiento
     REDIRECT_URI = f"https://etl-machine-learning-api-movie.onrender.com/callback_{callback}/"
     
     # Obtener el código de autorización desde la URL
