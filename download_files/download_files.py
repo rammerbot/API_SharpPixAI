@@ -22,6 +22,8 @@ def download_media_item(request, callback):
 
     media_items = [authenticate(request, callback)]
 
+    files_path = []
+
     for media_item in media_items:
 
         try:
@@ -46,8 +48,10 @@ def download_media_item(request, callback):
             with open(file_path, "wb") as file:
                 file.write(response.content)
             
+            files_path.append(file_path)
+            print(file_path)
         
         except Exception as e:
             print(f"Error al descargar el archivo {filename}: {str(e)}")
 
-    return file_path
+    return files_path
