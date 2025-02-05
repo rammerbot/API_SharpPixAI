@@ -5,9 +5,17 @@ from authentication import request_creds, authenticate
 app = FastAPI()
 
 
-@app.get("/auth/google")
+@app.get("/auth/video")
 async def auth_google(request: Request):
     return request_creds(request, 'video')
+
+@app.get("/auth/image")
+async def auth_google(request: Request):
+    return request_creds(request, 'image')
+
+@app.get("/auth/duplicate")
+async def auth_google(request: Request):
+    return request_creds(request, 'duplicate')
 
 @app.get("/callback")
 async def callback(request: Request):

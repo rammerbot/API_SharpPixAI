@@ -50,7 +50,9 @@ def request_creds(request, callback):
     
     return {'message': authorization_url, }
 
-def authenticate(request):
+def authenticate(request, callback):
+
+    REDIRECT_URI = f"https://etl-machine-learning-api-movie.onrender.com/callback_{callback}/"
     
     # Obtener el código de autorización desde la URL
     code = request.query_params.get("code")
