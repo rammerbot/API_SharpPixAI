@@ -24,7 +24,7 @@ def download_media_item(request, callback):
     for media_item in media_items:
 
             # Obtener lista de metadatos del objeto
-        mime_type = media_items.get('mimeType', '')
+        mime_type = media_item.get('mimeType', '')
 
         if callback == 'video' and not mime_type.startswith('video/'):
             continue
