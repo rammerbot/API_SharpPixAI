@@ -25,14 +25,14 @@ def compress_video(request, callback):
     input_dir = os.listdir(path_dir)
     
     for input_file in input_dir:
-        input_file = os.path.join(path_dir, input_file)
+        input_path = os.path.join(path_dir, input_file)
         
         # Verifica que FFmpeg esté disponible
         if not shutil.which("ffmpeg"):
             raise EnvironmentError("FFmpeg no está instalado o no está en PATH.")
 
         # Verificar el formato del archivo
-        file_ext =  os.path.splitext(input_file)[1].lower()
+        file_ext =  os.path.splitext(input_path)[1].lower()
         codec_video = "libx265"
         preset = "medium"
         crf = "28"
