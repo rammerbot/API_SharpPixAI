@@ -63,8 +63,8 @@ async def callback_video(request: Request):
 
 @app.get("/callback_image", tags=['callback'])
 async def callback_image(request: Request):
-    return authenticate(request, 'image')
+    return download_media_item(request, 'image')
 
 @app.get("/callback_duplicate", tags=['callback'])
 async def callback_duplicate(request: Request):
-    return authenticate(request, 'duplicate')
+    return download_media_item(request, 'duplicate')
