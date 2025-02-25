@@ -18,6 +18,10 @@ def compress_video(request, callback):
 
     # Descargar los archivos de google photos
     path_dir = download_media_item(request=request, callback=callback)
+    # Crear rutas para carpeta de salida
+    output_path = os.path.join(path_dir, 'opt')
+    os.makedirs(output_path, exist_ok=True)
+
     input_dir = os.listdir(path_dir)
     
     for input_file in input_dir:
@@ -33,9 +37,8 @@ def compress_video(request, callback):
         crf = "28"
         codec_audio = "aac"
 
-        # Crear rutas para carpeta de salida y ruta del archivo de salida
-        output_dir = os.makedirs(input_file + 'opt', exist_ok=True)
-        output_file = os.path.dirname(output_dir + 'opt')
+       
+        output_file = os.path.dirname(output_path, input_file)
 
         # Establecer codec si es webm
         if file_ext == ".webm":
