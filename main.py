@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 
 from authentication import request_creds, authenticate
 from download_files import download_media_item
-
+from video_optimizer import compress_video
 
 app = FastAPI(
     title="SharpPixAI - Google Auth API",
@@ -59,7 +59,7 @@ async def auth_google_duplicate(request: Request):
 
 @app.get("/callback_video", tags=['callback'])
 async def callback_video(request: Request):
-    return download_media_item(request, 'video')
+    return compress_video(request, 'video')
 
 @app.get("/callback_image", tags=['callback'])
 async def callback_image(request: Request):
