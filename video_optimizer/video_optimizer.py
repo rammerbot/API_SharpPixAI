@@ -6,46 +6,46 @@ from download_files import download_media_item
 
 def compress_video(request, callback):
     """
-    Comprime un video al formato AV1 utilizando FFmpeg con SVT-AV1.
-
-    Args:
-        input_file (str): Ruta del archivo de entrada.
-        output_file (str): Ruta del archivo comprimido.
-
-    Returns:
-        None
+    Comprime videos al formato AV1 utilizando FFmpeg con SVT-AV1.
     """
-
-    # Descargar los archivos de google photos
+    # Descargar los archivos de Google Photos
     path_dir = download_media_item(request=request, callback=callback)
-    # Crear rutas para carpeta de salida
+    
+    # Crear carpeta de salida para archivos comprimidos
     output_path = os.path.join(path_dir, 'opt')
     os.makedirs(output_path, exist_ok=True)
 
-    input_dir = os.listdir(path_dir)
-    
-    for input_file in input_dir:
-        input_path = os.path.join(path_dir, input_file)
+    # Listar archivos en el directorio de descargas
+    input_files = os.listdir(path_dir)
+
+    for filename in input_files:
+        input_file = os.path.join(path_dir, filename)
         
-        # Verifica que FFmpeg esté disponible
-        if not shutil.which("ffmpeg"):
-            raise EnvironmentError("FFmpeg no está instalado o no está en PATH.")
+        # Verificar si es un archivo (no un directorio)
+        if not os.path.isfile(input_file):
+            print(f"Ignorando directorio: {input_file}")
+            continue
 
         # Verificar el formato del archivo
-        file_ext =  os.path.splitext(input_path)[1].lower()
+        file_ext = os.path.splitext(filename)[1].lower()
+        if file_ext not in (".mp4", ".webm", ".mkv", ".avi", ".mov"):
+            print(f"Ignorando archivo no compatible: {filename}")
+            continue
+
+        # Configuración de codecs según extensión
         codec_video = "libx265"
         preset = "medium"
         crf = "28"
         codec_audio = "aac"
 
-       
-        output_file = f'compressed_{input_file}'
-        output_file = os.path.join(output_path, output_file)
+        # Nombre del archivo de salida
+        output_filename = f"compressed_{filename}"
+        output_file = os.path.join(output_path, output_filename)
 
-        # Establecer codec si es webm
+        # Ajustar codec de audio para formatos específicos
         if file_ext == ".webm":
             codec_audio = "libopus"
-        elif file_ext == ".mpg" or file_ext == ".mpeg" or file_ext == ".mpeg2":
+        elif file_ext in (".mpg", ".mpeg", ".mpeg2"):
             codec_audio = "mp2"
 
         # Comando de compresión
@@ -53,25 +53,27 @@ def compress_video(request, callback):
             "ffmpeg",
             "-i", input_file,          # Archivo de entrada
             "-c:v", codec_video,       # Codificador de video
-            "-crf", crf,         # Calidad (CRF)
-            "-preset", preset,   # Velocidad de compresión
-            "-c:a", codec_audio,       # Codificador de audio
+            "-crf", crf,              # Calidad (CRF)
+            "-preset", preset,        # Velocidad de compresión
+            "-c:a", codec_audio,      # Codificador de audio
             "-b:a", "128k",            # Tasa de bits del audio
             "-strict", "-2",           # Permitir configuraciones experimentales
             "-ignore_unknown",         # Ignorar errores de códec desconocidos
             output_file                # Archivo de salida
         ]
-        # Ejecuta el comando
+
+        # Ejecutar el comando
         try:
-            print(f"Procesando {input_file} con CRF={28} y velocidad={preset}...")
-            result = subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
+            print(f"Procesando {filename} con CRF={crf} y velocidad={preset}...")
+            subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
             print(f"Compresión completada. Archivo guardado en: {output_file}")
         except subprocess.CalledProcessError as e:
-            print(f"Error durante la compresión de {input_file}: {e.stderr.decode()}")
+            print(f"Error durante la compresión de {filename}: {e.stderr.decode()}")
         except Exception as e:
-            print(f"Ocurrió un error inesperado con {input_file}: {e}")
-    
+            print(f"Ocurrió un error inesperado con {filename}: {e}")
+
+    # Lista de archivos comprimidos
     lista_final = os.listdir(output_path)
     print(f'-----------------------------------{lista_final}--------------------------------')
 
-    return os.listdir(output_path)
+    return lista_final
