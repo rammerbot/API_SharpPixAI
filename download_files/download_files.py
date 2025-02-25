@@ -60,4 +60,5 @@ def download_media_item(request, callback):
         except Exception as e:
             print(f"Error al descargar el archivo {filename}: {str(e)}")
 
-    return download_dir
+    path_dir = os.path.abspath(download_dir)
+    return path_dir
