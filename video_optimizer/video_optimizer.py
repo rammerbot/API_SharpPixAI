@@ -21,7 +21,7 @@ def compress_video(request, callback):
     input_dir = os.listdir(path_dir)
     
     for input_file in input_dir:
-        input_dir = os.path.join(path_dir, input_file)
+        input_file = os.path.join(path_dir, input_file)
         # Verifica que FFmpeg esté disponible
         if not shutil.which("ffmpeg"):
             raise EnvironmentError("FFmpeg no está instalado o no está en PATH.")
@@ -35,7 +35,7 @@ def compress_video(request, callback):
 
         # Crear rutas para carpeta de salida y ruta del archivo de salida
         output_dir = os.mkdir(input_file + '')
-        output_file = os.path.dirname()
+        output_file = os.path.dirname(output_dir + 'opt')
 
         # Establecer codec si es webm
         if file_ext == ".webm":
