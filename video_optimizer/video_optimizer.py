@@ -34,7 +34,7 @@ def compress_video(request, callback):
         codec_audio = "aac"
 
         # Crear rutas para carpeta de salida y ruta del archivo de salida
-        output_dir = os.mkdir(input_file + '')
+        output_dir = os.mkdir(input_file + 'opt', exist_ok=True)
         output_file = os.path.dirname(output_dir + 'opt')
 
         # Establecer codec si es webm
