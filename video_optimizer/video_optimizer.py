@@ -13,7 +13,7 @@ def compress_video(request, callback):
         path_dir = download_media_item(request=request, callback=callback)
         
         # Crear carpeta de salida para archivos comprimidos
-        output_path = os.path.join(path_dir, 'opt')
+        output_path = os.path.dirname(path_dir + '_opt')
         os.makedirs(output_path, exist_ok=True)
 
         # Listar archivos en el directorio de descargas
