@@ -70,3 +70,4 @@ def compress_video(request, callback):
             print(f"Error durante la compresión de {input_file}: {e.stderr.decode()}")
         except Exception as e:
             print(f"Ocurrió un error inesperado con {input_file}: {e}")
+    return os.listdir(output_path)
