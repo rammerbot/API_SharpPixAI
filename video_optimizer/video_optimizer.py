@@ -17,11 +17,11 @@ def compress_video(request, callback):
     """
 
     # Descargar los archivos de google photos
-    input_dir = download_media_item(request, callback)
+    input_dir = download_media_item(request=request, callback=callback)
     input_dir = os.listdir(input_dir)
     
     for input_file in input_dir:
-
+        input_dir = os.path.join(input_dir, input_file)
         # Verifica que FFmpeg esté disponible
         if not shutil.which("ffmpeg"):
             raise EnvironmentError("FFmpeg no está instalado o no está en PATH.")
