@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Request, Response, Depends, status
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi import FastAPI, Request
 
 from authentication import request_creds, authenticate
 from download_files import download_media_item

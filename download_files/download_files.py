@@ -1,9 +1,6 @@
 import os
 import requests
 
-import googleapiclient.http
-from googleapiclient.errors import HttpError
-
 from authentication import authenticate
 
 
@@ -21,13 +18,24 @@ def download_media_item(request, callback):
     os.makedirs(download_dir, exist_ok=True)
 
     # Autenticacion del usuario y obtener el servicio con la metadata de los archivos
-    media_items = authenticate(request, callback)
-    # Obtener lista de metadatos del objeto
-    media_items = media_items.get('media_items')
+    media_items = authenticate(request, callback).get('media_items', [])
+
     # Iteracion de lista de metadatos
     for media_item in media_items:
 
+            # Obtener lista de metadatos del objeto
+        mime_type = media_items.get('mimeType', '')
+
+        if callback == 'video' and not mime_type.startswith('video/'):
+            continue
+        elif callback == 'image' and not mime_type.startswith('image/'):
+            continue
+        elif callback not in ('video', 'image', 'duplicate'):
+            raise ValueError(" Error en en calback, llamada al archivo inadecuado")
+                
+            
         try:
+
             # Obtener la URL base y el nombre del archivo
             base_url = media_item.get("baseUrl")
             filename = media_item.get("filename")
