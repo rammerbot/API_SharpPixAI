@@ -26,6 +26,7 @@ def compress_video(request, callback):
     
     for input_file in input_dir:
         input_file = os.path.join(path_dir, input_file)
+        
         # Verifica que FFmpeg esté disponible
         if not shutil.which("ffmpeg"):
             raise EnvironmentError("FFmpeg no está instalado o no está en PATH.")
@@ -38,7 +39,8 @@ def compress_video(request, callback):
         codec_audio = "aac"
 
        
-        output_file = os.path.dirname(output_path, input_file)
+        output_file = f'compressed_{input_file}'
+        output_file = os.path.join(output_path, output_file)
 
         # Establecer codec si es webm
         if file_ext == ".webm":
