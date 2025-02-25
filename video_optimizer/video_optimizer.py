@@ -85,7 +85,7 @@ def compress_video(request, callback):
         print(f"Eliminando carpeta de archivos comprimidos: {output_path}")
         shutil.rmtree(output_path)
 
-        return lista_final
+        return {"message": "proceso finalizado"}
 
     except Exception as e:
         print(f"Error general en la función compress_video: {e}")
