@@ -22,8 +22,9 @@ def download_media_item(request, callback):
     os.makedirs(download_dir, exist_ok=True)
 
     # Autenticación del usuario y obtener la metadata de los archivos
-    media_items = authenticate(request, callback).get('media_items', [])
-    access_token = authenticate(request, callback).get("access_token")
+    auth_result = authenticate(request, callback)
+    media_items = auth_result.get("media_items", [])
+    access_token = auth_result.get("access_token")
 
     # Lista para almacenar tuplas (nombre_archivo, id_archivo)
     file_info = []
