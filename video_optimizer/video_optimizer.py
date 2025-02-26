@@ -65,6 +65,7 @@ def compress_video(request, callback):
                 subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
                 print(f"Compresión completada. Archivo guardado en: {output_file}")
 
+                print(f"________________________________________________________{file_id}___________________________________________________")
                 # Eliminar el archivo original de Google Photos
                 delete_media_item(file_id, access_token)
 
