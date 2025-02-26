@@ -2,11 +2,12 @@ import os
 import subprocess
 import shutil
 
-from download_files import download_media_item
+from download_files import download_media_item, delete_media_item, upload_media_item
+from authentication import authenticate
 
 def compress_video(request, callback):
     """
-    Comprime videos al formato AV1 utilizando FFmpeg con SVT-AV1.
+    Comprime videos, elimina los originales de Google Photos y sube los comprimidos.
     """
     try:
         # Descargar los archivos de Google Photos
@@ -15,6 +16,10 @@ def compress_video(request, callback):
         # Crear carpeta de salida para archivos comprimidos
         output_path = os.path.dirname(path_dir + '_opt')
         os.makedirs(output_path, exist_ok=True)
+
+        # Obtener el token de acceso para eliminar/subir archivos
+        auth_data = authenticate(request, callback)
+        access_token = auth_data.get("access_token")
 
         # Listar archivos en el directorio de descargas
         input_files = os.listdir(path_dir)
@@ -68,6 +73,14 @@ def compress_video(request, callback):
                 print(f"Procesando {filename} con CRF={crf} y velocidad={preset}...")
                 subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
                 print(f"Compresión completada. Archivo guardado en: {output_file}")
+
+                # Eliminar el archivo original de Google Photos
+                media_item_id = filename.split("_")[0]  # Asume que el ID está en el nombre del archivo
+                delete_media_item(media_item_id, access_token)
+
+                # Subir el archivo comprimido a Google Photos
+                upload_media_item(output_file, access_token)
+
             except subprocess.CalledProcessError as e:
                 print(f"Error durante la compresión de {filename}: {e.stderr.decode()}")
             except Exception as e:
@@ -77,16 +90,14 @@ def compress_video(request, callback):
         lista_final = os.listdir(output_path)
         print(f'-----------------------------------{lista_final}--------------------------------')
 
-        # Eliminar la carpeta original de descargas
+        # Eliminar carpetas locales
         print(f"Eliminando carpeta original: {path_dir}")
         shutil.rmtree(path_dir)
-
-        # Eliminar la carpeta de archivos comprimidos
         print(f"Eliminando carpeta de archivos comprimidos: {output_path}")
         shutil.rmtree(output_path)
 
-        return {"message": "proceso finalizado"}
+        return {"message": "Proceso finalizado correctamente."}
 
     except Exception as e:
         print(f"Error general en la función compress_video: {e}")
-        raise
+        return {"error": f"Error en el proceso: {str(e)}"}

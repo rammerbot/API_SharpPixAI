@@ -1,6 +1,7 @@
 import os
 import requests
 
+from download_files import download_media_item
 from authentication import authenticate
 
 
@@ -62,3 +63,62 @@ def download_media_item(request, callback):
 
     path_dir = os.path.abspath(download_dir)
     return path_dir
+
+def delete_media_item(media_item_id, access_token):
+    """
+    Elimina un archivo de Google Photos usando su ID.
+    """
+    url = f"https://photoslibrary.googleapis.com/v1/mediaItems/{media_item_id}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+    response = requests.delete(url, headers=headers)
+    if response.status_code == 200:
+        print(f"Archivo {media_item_id} eliminado de Google Photos.")
+    else:
+        print(f"Error al eliminar {media_item_id}: {response.status_code} - {response.text}")
+        raise Exception(f"Error al eliminar {media_item_id}: {response.text}")
+
+def upload_media_item(file_path, access_token):
+    """
+    Sube un archivo a Google Photos.
+    """
+    # Paso 1: Obtener la URL de subida
+    upload_url = "https://photoslibrary.googleapis.com/v1/uploads"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-type": "application/octet-stream",
+        "X-Goog-Upload-File-Name": os.path.basename(file_path),
+        "X-Goog-Upload-Protocol": "raw",
+    }
+    with open(file_path, "rb") as file:
+        response = requests.post(upload_url, headers=headers, data=file)
+    
+    if response.status_code != 200:
+        print(f"Error al subir {file_path}: {response.status_code} - {response.text}")
+        raise Exception(f"Error al subir {file_path}: {response.text}")
+
+    upload_token = response.text
+
+    # Paso 2: Crear el mediaItem en Google Photos
+    create_url = "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-type": "application/json",
+    }
+    payload = {
+        "newMediaItems": [
+            {
+                "description": "Archivo comprimido",
+                "simpleMediaItem": {
+                    "uploadToken": upload_token,
+                },
+            }
+        ]
+    }
+    response = requests.post(create_url, headers=headers, json=payload)
+    if response.status_code == 200:
+        print(f"Archivo {file_path} subido a Google Photos.")
+    else:
+        print(f"Error al crear mediaItem para {file_path}: {response.status_code} - {response.text}")
+        raise Exception(f"Error al crear mediaItem para {file_path}: {response.text}")
