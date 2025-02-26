@@ -6,26 +6,21 @@ from download_files import download_media_item, delete_media_item, upload_media_
 from authentication import authenticate
 
 def compress_video(request, callback):
-    """
-    Comprime videos, elimina los originales de Google Photos y sube los comprimidos.
-    """
     try:
-        # Descargar los archivos de Google Photos
-        path_dir = download_media_item(request=request, callback=callback)
+        # Descargar los archivos y obtener sus IDs
+        download_dir, file_info = download_media_item(request, callback)
         
         # Crear carpeta de salida para archivos comprimidos
-        output_path = os.path.dirname(path_dir + '_opt')
+        output_path = os.path.dirname(download_dir + '_opt')
         os.makedirs(output_path, exist_ok=True)
 
         # Obtener el token de acceso para eliminar/subir archivos
         auth_data = authenticate(request, callback)
         access_token = auth_data.get("access_token")
 
-        # Listar archivos en el directorio de descargas
-        input_files = os.listdir(path_dir)
-
-        for filename in input_files:
-            input_file = os.path.join(path_dir, filename)
+        # Procesar cada archivo descargado
+        for filename, file_id in file_info:
+            input_file = os.path.join(download_dir, filename)
             
             # Verificar si es un archivo (no un directorio)
             if not os.path.isfile(input_file):
@@ -75,8 +70,7 @@ def compress_video(request, callback):
                 print(f"Compresión completada. Archivo guardado en: {output_file}")
 
                 # Eliminar el archivo original de Google Photos
-                media_item_id = filename.split("_")[0]  # Asume que el ID está en el nombre del archivo
-                delete_media_item(media_item_id, access_token)
+                delete_media_item(file_id, access_token)
 
                 # Subir el archivo comprimido a Google Photos
                 upload_media_item(output_file, access_token)
@@ -86,13 +80,9 @@ def compress_video(request, callback):
             except Exception as e:
                 print(f"Ocurrió un error inesperado con {filename}: {e}")
 
-        # Lista de archivos comprimidos
-        lista_final = os.listdir(output_path)
-        print(f'-----------------------------------{lista_final}--------------------------------')
-
         # Eliminar carpetas locales
-        print(f"Eliminando carpeta original: {path_dir}")
-        shutil.rmtree(path_dir)
+        print(f"Eliminando carpeta original: {download_dir}")
+        shutil.rmtree(download_dir)
         print(f"Eliminando carpeta de archivos comprimidos: {output_path}")
         shutil.rmtree(output_path)
 
