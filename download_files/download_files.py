@@ -1,7 +1,6 @@
 import os
 import requests
 
-from download_files import download_media_item
 from authentication import authenticate
 
 
