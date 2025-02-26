@@ -80,19 +80,18 @@ def download_media_item(request, callback):
     return path_dir, file_info, access_token
 
 def delete_media_item(media_item_id, access_token):
-    """
-    Elimina un archivo de Google Photos usando su ID.
-    """
     url = f"https://photoslibrary.googleapis.com/v1/mediaItems/{media_item_id}"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-    }
+    headers = {"Authorization": f"Bearer {access_token}"}
+    
     response = requests.delete(url, headers=headers)
-    if response.status_code == 200:
-        print(f"Archivo {media_item_id} eliminado de Google Photos.")
+    
+    if response.status_code == 204:  # El código correcto para delete es 204
+        print(f"Archivo {media_item_id} eliminado exitosamente")
+        return True
     else:
-        print(f"Error al eliminar {media_item_id}: {response.status_code} - {response.text}")
-        raise Exception(f"Error al eliminar {media_item_id}: {response.text}")
+        error_msg = f"Error {response.status_code}: {response.text}"
+        print(error_msg)
+        raise Exception(error_msg)
 
 def upload_media_item(file_path, access_token):
     """

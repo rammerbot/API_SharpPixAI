@@ -9,6 +9,7 @@ from googleapiclient.discovery import build
 CLIENT_SECRETS_FILE = "client_secrets.json"
 
 SCOPES = [
+    "https://www.googleapis.com/auth/photoslibrary", 
     "https://www.googleapis.com/auth/photoslibrary.appendonly",
     "https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata",
     "https://www.googleapis.com/auth/photoslibrary.readonly",
