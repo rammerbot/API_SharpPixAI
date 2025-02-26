@@ -2,21 +2,17 @@ import os
 import subprocess
 import shutil
 
-from download_files import download_media_item, delete_media_item, upload_media_item
-from authentication import authenticate
+from download_files import download_media_item, upload_media_item, delete_media_item
+
 
 def compress_video(request, callback):
     try:
         # Descargar los archivos y obtener sus IDs
-        download_dir, file_info = download_media_item(request, callback)
+        download_dir, file_info, access_token = download_media_item(request, callback)
         
         # Crear carpeta de salida para archivos comprimidos
         output_path = os.path.dirname(download_dir + '_opt')
         os.makedirs(output_path, exist_ok=True)
-
-        # Obtener el token de acceso para eliminar/subir archivos
-        auth_data = authenticate(request, callback)
-        access_token = auth_data.get("access_token")
 
         # Procesar cada archivo descargado
         for filename, file_id in file_info:

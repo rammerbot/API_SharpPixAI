@@ -1,13 +1,8 @@
 import os
-import sys
-from typing import Optional, List, Dict
 import secrets
-import requests
 
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-from fastapi import Request
 
 
 # Configuración del flujo OAuth

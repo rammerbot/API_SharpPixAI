@@ -23,6 +23,7 @@ def download_media_item(request, callback):
 
     # Autenticación del usuario y obtener la metadata de los archivos
     media_items = authenticate(request, callback).get('media_items', [])
+    access_token = authenticate(request, callback).get("access_token")
 
     # Lista para almacenar tuplas (nombre_archivo, id_archivo)
     file_info = []
@@ -73,7 +74,9 @@ def download_media_item(request, callback):
     path_dir = os.path.abspath(download_dir)
 
     # Devolver el directorio y la lista de tuplas (nombre_archivo, id_archivo)
-    return path_dir, file_info
+    print(f"________________________________________________________{file_info}___________________________________________________")
+    print(f"________________________________________________________{access_token}___________________________________________________")
+    return path_dir, file_info, access_token
 
 def delete_media_item(media_item_id, access_token):
     """
